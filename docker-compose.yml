@@ -1,0 +1,37 @@
+services:
+  jenkins_master:
+     image: jenkins/jenkins
+     user: "jenkins"
+     ports:
+     - 8080:8080
+     - 50000:50000
+     volumes:
+     - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_master:/var/jenkins_home"
+     - /var/run/docker.sock:/var/run/docker.sock
+     networks:
+     - jenkins
+
+  jenkins_agent1:
+    image: jenkins/ssh-agent
+    ports:
+    - 50000
+    volumes:
+    - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent1:/home/jenkins"
+    networks:
+    - jenkins
+    env_file:
+    - .env	
+
+  jenkins_agent2:
+    image: jenkins/ssh-agent
+    ports:
+    - 50000
+    volumes:
+    - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent2:/home/jenkins"
+    networks:
+    - jenkins
+    env_file:
+    - .env	
+
+networks:
+   jenkins:
