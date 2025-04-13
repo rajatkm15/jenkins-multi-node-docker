@@ -1,75 +1,111 @@
 #!/bin/bash
 
-#This Script will generate a custom docker-compose file
-#Using Docker Compose you can deploy jenkins with multi node
+# Jenkins Multi-Node Docker Deployment Script
+# This script generates a custom docker-compose.yml file for deploying Jenkins with multiple agent nodes
+# Usage: Simply run the script and follow the prompts
 
+# Configuration Section
+# --------------------------------------------------
+# Base directory for Jenkins files (can be changed to any directory)
+JENKINS_BASE_DIR="/home/$USER/jenkins-multi-node-docker"
 
-#Creating essential Directories. By Defualt home directory is selected, you can chnange it any custom directory just replace $HOME variable.
+# Docker Compose file and SSH key paths
+COMPOSE_FILE="$JENKINS_BASE_DIR/docker-compose.yml"
+KEY_PATH="$JENKINS_BASE_DIR/jenkins_master/.ssh/id_rsa"
 
+# Jenkins user UID and GID (default is 1000:1000)
+JENKINS_UID=1000
+JENKINS_GID=1000
+# --------------------------------------------------
 
-DIR="/home/$USER/jenkins-multi-node-docker"
+# Create necessary directory structure
+echo "Setting up directory structure in $JENKINS_BASE_DIR..."
+mkdir -p "$JENKINS_BASE_DIR/jenkins_master/.ssh"
+mkdir -p "$JENKINS_BASE_DIR/docker"
 
-
-#mkdir -p "$DIR/docker"
-mkdir -p "$DIR/jenkins_master"
-mkdir -p "$DIR/jenkins_master/.ssh"
-
-
-#Setting Variables
-
-COMPOSE_FILE="$DIR/docker-compose.yml"
-KEY_PATH="$DIR/jenkins_master/.ssh/id_rsa"
-
-touch "$COMPOSE_FILE"
-echo "services:" > $COMPOSE_FILE
-
-cat <<EOF >> $COMPOSE_FILE
+# Initialize docker-compose.yml file
+echo "Creating docker-compose.yml..."
+cat <<EOF > "$COMPOSE_FILE"
+version: '3.8'  # Explicit version for better compatibility
+services:
   jenkins_master:
-     image: jenkins/jenkins
-     user: "jenkins"
-     ports:
-     - 8080:8080
-     - 50000:50000
-     volumes:
-     - "$DIR/jenkins_master:/var/jenkins_home"
-     - /var/run/docker.sock:/var/run/docker.sock
-     networks:
-     - jenkins
-
-EOF
-
-#SSH Key Generation
-
-ssh-keygen -t rsa -b 4096 -f "$KEY_PATH" -N ""
-
-chmod 600 "$KEY_PATH"
-chmod 600 "$KEY_PATH.pub"
-chown -R 1000:1000 "$DIR/jenkins_master/.ssh"  #Enter the UID and GID same as user used in jenkins. By default jenkins is used and it has 1000 as UID and GID"
-
-read -p "Enter the number of nodes: " node_num
-
-for i in $(seq 1 $node_num)
-do
-	mkdir -p "$DIR/jenkins_agent$i"
-	echo "JENKINS_AGENT_SSH_PUBKEY=$(cat $KEY_PATH.pub)" > "$DIR/.env"
-
-	cat<<EOF>> $COMPOSE_FILE
-  jenkins_agent$i:
-    image: jenkins/ssh-agent
+    image: jenkins/jenkins:lts  # Using LTS version for stability
     ports:
-    - 50000
+      - "8080:8080"  # Web UI port
+      - "50000:50000"  # Agent communication port
     volumes:
-    - "$DIR/jenkins_agent$i:/home/jenkins"
+      - "$JENKINS_BASE_DIR/jenkins_master:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Allows Jenkins to run Docker commands
     networks:
-    - jenkins
-    env_file:
-    - .env	
+      - jenkins
+    restart: unless-stopped  # Auto-restart policy for reliability
 
 EOF
 
-chown -R 1000:1000 "$DIR/jenkins_agent$i" 
+# Generate SSH key pair for agent communication
+echo "Generating SSH keys for Jenkins agent communication..."
+ssh-keygen -t rsa -b 4096 -f "$KEY_PATH" -N "" -q  # -q for quiet mode
+chmod 600 "$KEY_PATH" "$KEY_PATH.pub"
+chown -R "${JENKINS_UID}:${JENKINS_GID}" "$JENKINS_BASE_DIR/jenkins_master/.ssh"
 
+# Store public key in environment file for agents
+echo "JENKINS_AGENT_SSH_PUBKEY=$(cat $KEY_PATH.pub)" > "$JENKINS_BASE_DIR/.env"
+
+# Get number of agent nodes from user
+read -p "Enter the number of agent nodes to create: " node_num
+
+# Validate input
+while true; do
+    read -p "Enter the number of agent nodes to create: " node_num
+    
+    # Validate input is a positive integer
+    if [[ "$node_num" =~ ^[0-9]+$ ]] && [ "$node_num" -gt 0 ]; then
+        break
+    else
+        echo "Error: Please enter a valid positive number" >&2
+    fi
 done
 
-echo "networks:" >> $COMPOSE_FILE
-echo -e "   jenkins:" >> $COMPOSE_FILE
+# Create agent services in docker-compose.yml
+echo "Configuring $node_num agent nodes..."
+for i in $(seq 1 "$node_num"); do
+    agent_dir="$JENKINS_BASE_DIR/jenkins_agent$i"
+    mkdir -p "$agent_dir"
+    
+    cat <<EOF >> "$COMPOSE_FILE"
+  jenkins_agent${i}:
+    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
+    ports:
+      - "50000"  # Agent communication port
+    volumes:
+      - "$agent_dir:/home/jenkins"
+    networks:
+      - jenkins
+    env_file:
+      - .env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # CPU limit
+          memory: 512M  # Memory limit
+
+EOF
+
+    chown -R "${JENKINS_UID}:${JENKINS_GID}" "$agent_dir"
+done
+
+# Add network configuration
+cat <<EOF >> "$COMPOSE_FILE"
+networks:
+  jenkins:
+    driver: bridge
+    attachable: true  # Allows containers to attach after creation
+EOF
+
+# Completion message
+echo -e "\nSetup complete!"
+echo "You can now start your Jenkins cluster with:"
+echo "cd $JENKINS_BASE_DIR && docker-compose up -d"
+echo -e "\nAccess Jenkins at: http://localhost:8080"
+echo "SSH private key for agents is stored at: $KEY_PATH"
