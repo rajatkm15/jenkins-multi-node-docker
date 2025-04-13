@@ -14,7 +14,7 @@ services:
 
   jenkins_agent1:
     build: .
-    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
+    image: rajatkm93/ssh-agent:v2 #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:
@@ -33,7 +33,7 @@ services:
 
   jenkins_agent2:
     build: .
-    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
+    image: rajatkm93/ssh-agent:v2 #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:

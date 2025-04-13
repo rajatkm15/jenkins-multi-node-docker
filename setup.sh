@@ -74,7 +74,7 @@ for i in $(seq 1 "$node_num"); do
     cat <<EOF >> "$COMPOSE_FILE"
   jenkins_agent${i}:
     build: .
-    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
+    image: rajatkm93/ssh-agent:v2 #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:
