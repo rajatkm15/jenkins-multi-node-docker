@@ -1,37 +1,52 @@
+version: '3.8'  # Explicit version for better compatibility
 services:
   jenkins_master:
-     image: jenkins/jenkins
-     user: "jenkins"
-     ports:
-     - 8080:8080
-     - 50000:50000
-     volumes:
-     - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_master:/var/jenkins_home"
-     - /var/run/docker.sock:/var/run/docker.sock
-     networks:
-     - jenkins
+    image: jenkins/jenkins:lts  # Using LTS version for stability
+    ports:
+      - "8080:8080"  # Web UI port
+      - "50000:50000"  # Agent communication port
+    volumes:
+      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_master:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Allows Jenkins to run Docker commands
+    networks:
+      - jenkins
+    restart: unless-stopped  # Auto-restart policy for reliability
 
   jenkins_agent1:
-    image: jenkins/ssh-agent
+    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
     ports:
-    - 50000
+      - "50000"  # Agent communication port
     volumes:
-    - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent1:/home/jenkins"
+      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent1:/home/jenkins"
     networks:
-    - jenkins
+      - jenkins
     env_file:
-    - .env	
+      - .env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # CPU limit
+          memory: 512M  # Memory limit
 
   jenkins_agent2:
-    image: jenkins/ssh-agent
+    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
     ports:
-    - 50000
+      - "50000"  # Agent communication port
     volumes:
-    - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent2:/home/jenkins"
+      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent2:/home/jenkins"
     networks:
-    - jenkins
+      - jenkins
     env_file:
-    - .env	
+      - .env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'  # CPU limit
+          memory: 512M  # Memory limit
 
 networks:
-   jenkins:
+  jenkins:
+    driver: bridge
+    attachable: true  # Allows containers to attach after creation

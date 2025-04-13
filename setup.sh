@@ -6,6 +6,7 @@
 
 # Configuration Section
 # --------------------------------------------------
+
 # Base directory for Jenkins files (can be changed to any directory)
 JENKINS_BASE_DIR="/home/$USER/jenkins-multi-node-docker"
 
@@ -16,12 +17,13 @@ KEY_PATH="$JENKINS_BASE_DIR/jenkins_master/.ssh/id_rsa"
 # Jenkins user UID and GID (default is 1000:1000)
 JENKINS_UID=1000
 JENKINS_GID=1000
+
 # --------------------------------------------------
 
 # Create necessary directory structure
 echo "Setting up directory structure in $JENKINS_BASE_DIR..."
+
 mkdir -p "$JENKINS_BASE_DIR/jenkins_master/.ssh"
-mkdir -p "$JENKINS_BASE_DIR/docker"
 
 # Initialize docker-compose.yml file
 echo "Creating docker-compose.yml..."
@@ -52,9 +54,6 @@ chown -R "${JENKINS_UID}:${JENKINS_GID}" "$JENKINS_BASE_DIR/jenkins_master/.ssh"
 echo "JENKINS_AGENT_SSH_PUBKEY=$(cat $KEY_PATH.pub)" > "$JENKINS_BASE_DIR/.env"
 
 # Get number of agent nodes from user
-read -p "Enter the number of agent nodes to create: " node_num
-
-# Validate input
 while true; do
     read -p "Enter the number of agent nodes to create: " node_num
     
@@ -74,11 +73,12 @@ for i in $(seq 1 "$node_num"); do
     
     cat <<EOF >> "$COMPOSE_FILE"
   jenkins_agent${i}:
-    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
+    image: jenkins/ssh-agent  
     ports:
       - "50000"  # Agent communication port
     volumes:
-      - "$agent_dir:/home/jenkins"
+      - "$agent_dir:/home/jenkins" 
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Allows Jenkins to run Docker commands
     networks:
       - jenkins
     env_file:
