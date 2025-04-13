@@ -13,11 +13,13 @@ services:
     restart: unless-stopped  # Auto-restart policy for reliability
 
   jenkins_agent1:
-    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
+    build: .
+    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:
-      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent1:/home/jenkins"
+      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent1:/home/jenkins" 
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Allows Jenkins to run Docker commands
     networks:
       - jenkins
     env_file:
@@ -30,11 +32,13 @@ services:
           memory: 512M  # Memory limit
 
   jenkins_agent2:
-    image: jenkins/ssh-agent:alpine  # Using alpine for smaller footprint
+    build: .
+    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:
-      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent2:/home/jenkins"
+      - "/home/linuxgr8/jenkins-multi-node-docker/jenkins_agent2:/home/jenkins" 
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Allows Jenkins to run Docker commands
     networks:
       - jenkins
     env_file:

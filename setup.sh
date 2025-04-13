@@ -73,7 +73,8 @@ for i in $(seq 1 "$node_num"); do
     
     cat <<EOF >> "$COMPOSE_FILE"
   jenkins_agent${i}:
-    image: jenkins/ssh-agent  
+    build: .
+    image: rajatkm93/ssh-agent:latest #Add your docker hub repo
     ports:
       - "50000"  # Agent communication port
     volumes:
@@ -92,7 +93,7 @@ for i in $(seq 1 "$node_num"); do
 
 EOF
 
-    chown -R "${JENKINS_UID}:${JENKINS_GID}" "$agent_dir"
+    #chown -R "${JENKINS_UID}:${JENKINS_GID}" "$agent_dir"
 done
 
 # Add network configuration
