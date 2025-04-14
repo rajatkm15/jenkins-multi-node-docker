@@ -68,17 +68,16 @@ This will:
 
 Build the Docker Image
 
-docker compose build --no-cache
+   docker compose build --no-cache
 
 Start the Jenkins Cluster
 
-docker compose up
+   docker compose up
 
 Access Jenkins
 
-URL: http://localhost:8080
-
-Agent port: 50000 (used internally for master-agent communication)
+   URL: http://localhost:8080 
+   Agent port: 50000 (used internally for master-agent communication)
 
 🧪 Coming Soon
 - A sample Jenkins pipeline demonstrating:
