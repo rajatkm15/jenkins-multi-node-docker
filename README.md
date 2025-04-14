@@ -1,4 +1,4 @@
-# Jenkins Multi-Node with Docker Compose
+# Jenkins Multi-Node Setup Using Docker Compose
 
 This project sets up a Jenkins server with a multi-node architecture using Docker Compose. It automates the process of creating Jenkins master and agent containers, allowing you to run Jenkins pipeline jobs inside Docker containers. Perfect for DevOps enthusiasts and learners who want to understand Jenkins distributed builds in a containerized environment.
 
