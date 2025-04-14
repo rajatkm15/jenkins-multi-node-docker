@@ -50,15 +50,15 @@ Make sure you have the following installed:
 
 1. **Clone the Repository**
 
-   git clone https://github.com/rajatkm15/jenkins-multi-node-docker.git
-   cd jenkins-multi-node-docker
+         git clone https://github.com/rajatkm15/jenkins-multi-node-docker.git
+         cd jenkins-multi-node-docker
    
 Make the Setup Script Executable
 
-chmod +x setup.sh
+      chmod +x setup.sh
 
 Run the Setup Script
-./setup.sh
+      bash ./setup.sh
 
 This will:
 - Ask for number of Jenkins agents
