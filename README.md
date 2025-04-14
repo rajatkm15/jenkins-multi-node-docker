@@ -52,7 +52,7 @@ Make sure you have the following installed:
 
          git clone https://github.com/rajatkm15/jenkins-multi-node-docker.git
 
-            cd jenkins-multi-node-docker
+         cd jenkins-multi-node-docker
    
 Make the Setup Script Executable
 
@@ -91,10 +91,10 @@ Access Jenkins
 - You can modify image name, volume paths, or port mappings in the setup.sh as needed.
 - Recommended to always build images first before bringing up containers to avoid using cached layers.
 
-📸 Screenshots
+📸 Screenshots: 
 Will be added later.
 
-🙋‍♂️ Author
+🙋‍♂️ Author: 
 Rajat Kumar
 Feel free to connect or raise issues for enhancements.
 
