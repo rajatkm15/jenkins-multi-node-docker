@@ -58,7 +58,8 @@ Make the Setup Script Executable
       chmod +x setup.sh
 
 Run the Setup Script
-      bash ./setup.sh
+
+         ./setup.sh
 
 This will:
 - Ask for number of Jenkins agents
