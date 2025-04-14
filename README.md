@@ -91,18 +91,9 @@ Agent port: 50000 (used internally for master-agent communication)
 - Recommended to always build images first before bringing up containers to avoid using cached layers.
 
 📸 Screenshots
-Will be added layer
+Will be added later.
 
 🙋‍♂️ Author
 Rajat Kumar
 Feel free to connect or raise issues for enhancements.
 
----
-
-Let me know if you want me to:
-
-- Add badges (like Docker or Jenkins logos)
-- Generate a sample pipeline YAML
-- Create a `.gitignore` for Jenkins volumes (`jenkins_*` folders)
-
-Would you like this saved into a `README.md` file directly?
