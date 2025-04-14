@@ -51,7 +51,8 @@ Make sure you have the following installed:
 1. **Clone the Repository**
 
          git clone https://github.com/rajatkm15/jenkins-multi-node-docker.git
-         cd jenkins-multi-node-docker
+
+            cd jenkins-multi-node-docker
    
 Make the Setup Script Executable
 
@@ -77,7 +78,7 @@ Start the Jenkins Cluster
 
 Access Jenkins
 
-      URL: http://localhost:8080 
+      http://localhost:8080 
    Agent port: 50000 (used internally for master-agent communication)
 
 🧪 Coming Soon
