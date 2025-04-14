@@ -1,180 +1,108 @@
-# **Jenkins Multi-Node Setup with Docker** 🚀
+# Jenkins Multi-Node with Docker Compose
 
-## **📌 Overview**
-
-This project demonstrates how to set up a **Jenkins multi-node environment** using **Docker containers** inside a **Linux VM** running on **VirtualBox**. The setup includes:
-
-- **Jenkins Master** running in a Docker container
-- **Jenkins Agent Nodes** in separate Docker containers
-- **Docker-in-Docker (DinD)** setup to allow agents to build container images
-- **Accessing Jenkins from the host machine**
-- **Running CI/CD pipelines inside agent containers**
+This project sets up a Jenkins server with a multi-node architecture using Docker Compose. It automates the process of creating Jenkins master and agent containers, allowing you to run Jenkins pipeline jobs inside Docker containers. Perfect for DevOps enthusiasts and learners who want to understand Jenkins distributed builds in a containerized environment.
 
 ---
 
-## **📖 Architecture Diagram**
+## 🚀 Features
 
-&#x20;*(Replace with your actual diagram)*
-
----
-
-## **🛠 Prerequisites**
-
-### **For Windows & macOS Users**
-
-1. Install [VirtualBox](https://www.virtualbox.org/) and [Vagrant](https://www.vagrantup.com/) (optional for automation).
-2. Follow the official instructions to **set up a Linux VM**:
-   - [VirtualBox Setup Guide](https://www.virtualbox.org/manual/UserManual.html)
-   - [Creating a Linux VM](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview) *(Ubuntu example, but other distributions work too)*
-3. Allocate at least **2 CPUs, 4GB RAM**, and **20GB disk space**.
-
-### **For Linux Users**
-
-If you are using a Linux machine, you can skip directly to the **Docker Installation** step.
+- Jenkins master and multiple agents running in Docker containers
+- Agents use a lightweight image based on `jenkins/ssh-agent:alpine`
+- Docker CLI and OpenJDK 21 installed in agents to support Docker-based pipeline jobs
+- Setup fully automated via a shell script (`setup.sh`)
+- Dynamic agent count based on user input
+- SSH key setup and volume mappings handled automatically
 
 ---
 
-## **⚙️ Setting Up the Environment**
+## 🧰 Tech Stack
 
-### **1️⃣ Step 1: Install Docker on the Linux VM**
-
-Run the following commands inside your Linux VM:
-
-```sh
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y docker.io docker-compose
-sudo usermod -aG docker $USER
-```
-
-**Restart your VM** to apply group changes.
+- Shell Scripting
+- Docker & Docker Compose
+- Jenkins (Master + SSH Agents)
+- Dockerfile (for building custom agent image)
+- OpenJDK 21
+- Alpine Linux (base image)
 
 ---
 
-### **2️⃣ Step 2: Clone this Repository**
+## 🧱 Custom Agent Image
 
-```sh
-git clone https://github.com/yourusername/jenkins-multi-node-docker.git
-cd jenkins-multi-node-docker
-```
+The Jenkins agents use a custom Docker image built from the official `jenkins/ssh-agent:alpine` image. This image is extended to include:
 
----
-
-### **3️⃣ Step 3: Start Jenkins Master and Agent Nodes**
-
-Run the following command to launch Jenkins and agent nodes using Docker Compose:
-
-```sh
-docker-compose up -d
-```
-
-To check running containers:
-
-```sh
-docker ps
-```
+- Docker CLI (to run Docker commands in pipeline jobs)
+- OpenJDK 21 (to support Java-based projects)
 
 ---
 
-### **4️⃣ Step 4: Access Jenkins**
+## 🛠️ Prerequisites
 
-- Open **http\://****:8080** in your browser
-- Retrieve the **admin password** using:
-  ```sh
-  docker exec -it jenkins-master cat /var/jenkins_home/secrets/initialAdminPassword
-  ```
-- Complete the Jenkins setup
+Make sure you have the following installed:
 
----
-
-### **5️⃣ Step 5: Configure Agent Nodes in Jenkins**
-
-- Go to **Manage Jenkins → Nodes & Clouds → New Node**
-- Register agent nodes using SSH or the **JNLP method**
-- Verify connectivity
+- A Linux system or Windows with WSL
+- Docker
+- Docker Compose
+- Git
 
 ---
 
-## **🚀 Running CI/CD Pipelines**
+## ⚙️ Setup Instructions
 
-Jenkins agents will be able to:
-✅ Run build jobs
-✅ Build Docker images inside containers
-✅ Push images to Docker Hub
+1. **Clone the Repository**
 
-Example **Jenkinsfile**:
+   git clone https://github.com/rajatkm15/jenkins-multi-node-docker.git
+   cd jenkins-multi-node-docker
+   
+Make the Setup Script Executable
 
-```groovy
-pipeline {
-    agent { label 'docker-agent' }
-    stages {
-        stage('Build Image') {
-            steps {
-                sh 'docker build -t myapp:latest .'
-            }
-        }
-        stage('Push to DockerHub') {
-            steps {
-                withDockerRegistry([credentialsId: 'docker-hub-creds']) {
-                    sh 'docker push myapp:latest'
-                }
-            }
-        }
-    }
-}
-```
+chmod +x setup.sh
 
----
+Run the Setup Script
+./setup.sh
 
-## **📸 Demo & Screenshots**
+This will:
+- Ask for number of Jenkins agents
+- Generate SSH keys
+- Create required directories (jenkins_master, jenkins_agent1, jenkins_agent2, etc.)
+- Generate .env and docker-compose.yml
 
-📷 **[Add screenshots or GIFs of Jenkins UI, Agent Configuration, Running Jobs]**
+Build the Docker Image
 
----
+docker compose build --no-cache
 
-## **📂 Repository Structure**
+Start the Jenkins Cluster
 
-```
-📂 jenkins-multi-node-docker  
- ├── 📂 setup-scripts/       # Shell scripts for setup automation  
- ├── 📂 docker/              # Dockerfiles for Jenkins Master & Agents  
- ├── 📂 docs/                # Architecture diagrams & documentation  
- ├── 📂 pipeline-examples/   # Sample Jenkins pipelines  
- ├── 📄 README.md            # This file  
- ├── 📄 docker-compose.yml   # Docker Compose file for easy deployment  
- ├── 📄 .gitignore  
-```
+docker compose up
 
----
+Access Jenkins
 
-## **📜 Useful Commands**
+URL: http://localhost:8080
 
-Restart all services:
+Agent port: 50000 (used internally for master-agent communication)
 
-```sh
-docker-compose restart
-```
+🧪 Coming Soon
+- A sample Jenkins pipeline demonstrating:
+- Running Docker commands inside agent
+- Building a simple Java project
 
-Stop all services:
+📝 Notes
+- The directories jenkins_master, jenkins_agent1, jenkins_agent2, etc., are used as host volumes for Jenkins containers.
+- You can modify image name, volume paths, or port mappings in the setup.sh as needed.
+- Recommended to always build images first before bringing up containers to avoid using cached layers.
 
-```sh
-docker-compose down
-```
+📸 Screenshots
+Will be added layer
 
-Check logs:
-
-```sh
-docker logs jenkins-master -f
-```
+🙋‍♂️ Author
+Rajat Kumar
+Feel free to connect or raise issues for enhancements.
 
 ---
 
-## **📢 Contributing**
+Let me know if you want me to:
 
-Feel free to open issues or PRs if you find improvements!
+- Add badges (like Docker or Jenkins logos)
+- Generate a sample pipeline YAML
+- Create a `.gitignore` for Jenkins volumes (`jenkins_*` folders)
 
----
-
-## **📜 License**
-
-MIT License
-
+Would you like this saved into a `README.md` file directly?
